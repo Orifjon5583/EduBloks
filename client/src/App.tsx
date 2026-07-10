@@ -23,6 +23,7 @@ import TLibrary from './pages/teacher/Library';
 import TReviews from './pages/teacher/Reviews';
 import SDashboard from './pages/student/Dashboard';
 import SLessons from './pages/student/Lessons';
+import SQuiz from './pages/student/Quiz';
 import STyping from './pages/student/Typing';
 import SBugFix from './pages/student/BugFix';
 import SCoding from './pages/student/Coding';
@@ -74,6 +75,7 @@ export default function App() {
     <Route path="/student" element={<Guard roles={['STUDENT']}><StudentLayout/></Guard>}>
       <Route index element={<SDashboard/>}/>
       <Route path="lessons" element={<SLessons/>}/>
+      <Route path="quiz" element={<SQuiz/>}/>
       <Route path="typing" element={<STyping/>}/>
       <Route path="bugfix" element={<SBugFix/>}/>
       <Route path="coding" element={<SCoding/>}/>

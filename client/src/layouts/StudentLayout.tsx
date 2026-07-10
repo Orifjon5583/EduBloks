@@ -5,6 +5,7 @@ import { useThemeStore } from '../store/theme';
 const links = [
   { to: '/student', label: '📊 Dashboard', end: true },
   { to: '/student/lessons', label: '📖 Darslar' },
+  { to: '/student/quiz', label: '❓ Quiz' },
   { to: '/student/typing', label: '⌨️ Typing' },
   { to: '/student/bugfix', label: '🐛 Bug Fix' },
   { to: '/student/coding', label: '💻 Coding' },
