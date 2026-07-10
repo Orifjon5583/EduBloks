@@ -1,0 +1,45 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from './store/auth';
+import Login from './pages/Login';
+import AdminLayout from './layouts/AdminLayout';
+import TeacherLayout from './layouts/TeacherLayout';
+import StudentLayout from './layouts/StudentLayout';
+import AdminDashboard from './pages/admin/Dashboard';
+import Branches from './pages/admin/Branches';
+import Teachers from './pages/admin/Teachers';
+import Groups from './pages/admin/Groups';
+import Students from './pages/admin/Students';
+import XPApproval from './pages/admin/XPApproval';
+import Logs from './pages/admin/Logs';
+import Rankings from './pages/admin/Rankings';
+import TDashboard from './pages/teacher/Dashboard';
+import Lessons from './pages/teacher/Lessons';
+import Quizzes from './pages/teacher/Quizzes';
+import Library from './pages/teacher/Library';
+import SDashboard from './pages/student/Dashboard';
+import StudentLessons from './pages/student/Lessons';
+import Typing from './pages/student/Typing';
+import SRankings from './pages/student/Rankings';
+import Chat from './pages/Chat';
+
+function Guard({children,roles}:{children:any,roles:string[]}) {
+  const {user}=useAuthStore(); if(!user) return <Navigate to="/login"/>; if(!roles.includes(user.role)) return <Navigate to="/login"/>; return children;
+}
+function home(role:string) { return role==='SUPER_ADMIN'?'/admin':role==='TEACHER'?'/teacher':'/student'; }
+
+export default function App() {
+  const {user}=useAuthStore();
+  return <Routes>
+    <Route path="/login" element={!user?<Login/>:<Navigate to={home(user.role)}/>}/>
+    <Route path="/admin" element={<Guard roles={['SUPER_ADMIN']}><AdminLayout/></Guard>}>
+      <Route index element={<AdminDashboard/>}/><Route path="branches" element={<Branches/>}/><Route path="teachers" element={<Teachers/>}/><Route path="groups" element={<Groups/>}/><Route path="students" element={<Students/>}/><Route path="xp-approval" element={<XPApproval/>}/><Route path="logs" element={<Logs/>}/><Route path="rankings" element={<Rankings/>}/><Route path="chat" element={<Chat/>}/>
+    </Route>
+    <Route path="/teacher" element={<Guard roles={['TEACHER']}><TeacherLayout/></Guard>}>
+      <Route index element={<TDashboard/>}/><Route path="lessons" element={<Lessons/>}/><Route path="quizzes" element={<Quizzes/>}/><Route path="library" element={<Library/>}/><Route path="chat" element={<Chat/>}/>
+    </Route>
+    <Route path="/student" element={<Guard roles={['STUDENT']}><StudentLayout/></Guard>}>
+      <Route index element={<SDashboard/>}/><Route path="lessons" element={<StudentLessons/>}/><Route path="typing" element={<Typing/>}/><Route path="rankings" element={<SRankings/>}/><Route path="chat" element={<Chat/>}/>
+    </Route>
+    <Route path="*" element={<Navigate to={user?home(user.role):'/login'}/>}/>
+  </Routes>;
+}

@@ -1,0 +1,384 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum XPRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SubmissionType {
+  CODING
+  FIGMA
+  BUGFIX
+}
+
+model User {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  login     String   @unique
+  password  String
+  role      Role
+  isActive  Boolean  @default(true)
+  branchId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branch           Branch?          @relation(fields: [branchId], references: [id])
+  teacherGroups    Group[]          @relation("TeacherGroups")
+  lessons          Lesson[]
+  quizzes          Quiz[]
+  typingWordLists  TypingWordList[]
+  bugFixExercises  BugFixExercise[]
+  codingChallenges CodingChallenge[]
+  figmaChallenges  FigmaChallenge[]
+  libraryItems     LibraryItem[]
+  xpRequestsMade   XPRequest[]      @relation("TeacherXPRequests")
+  studentGroups    StudentGroup[]
+  quizAttempts     QuizAttempt[]
+  typingResults    TypingResult[]
+  submissions      Submission[]
+  xpRecords        XP[]
+  xpRequestsFor    XPRequest[]      @relation("StudentXPRequests")
+  achievements     UserAchievement[]
+  streak           Streak?
+  notifications    Notification[]
+  sentMessages     ChatMessage[]    @relation("SentMessages")
+  receivedMessages ChatMessage[]    @relation("ReceivedMessages")
+  systemLogs       SystemLog[]
+
+  @@map("users")
+}
+
+model Branch {
+  id        String   @id @default(uuid())
+  name      String
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+  groups    Group[]
+  @@map("branches")
+}
+
+model Group {
+  id        String         @id @default(uuid())
+  name      String
+  teacherId String?
+  branchId  String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  teacher   User?          @relation("TeacherGroups", fields: [teacherId], references: [id])
+  branch    Branch?        @relation(fields: [branchId], references: [id])
+  students  StudentGroup[]
+  @@map("groups")
+}
+
+model StudentGroup {
+  id        String   @id @default(uuid())
+  studentId String
+  groupId   String
+  joinedAt  DateTime @default(now())
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  @@unique([studentId, groupId])
+  @@map("student_groups")
+}
+
+model Course {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  order  Int
+  topics Topic[]
+  @@map("courses")
+}
+
+model Topic {
+  id               String            @id @default(uuid())
+  name             String
+  order            Int
+  courseId          String
+  course           Course            @relation(fields: [courseId], references: [id])
+  lessons          Lesson[]
+  quizzes          Quiz[]
+  typingWordLists  TypingWordList[]
+  bugFixExercises  BugFixExercise[]
+  codingChallenges CodingChallenge[]
+  figmaChallenges  FigmaChallenge[]
+  @@map("topics")
+}
+
+model Lesson {
+  id          String             @id @default(uuid())
+  title       String
+  content     String
+  topicId     String
+  teacherId   String
+  scheduledAt DateTime?
+  isPublished Boolean            @default(false)
+  order       Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  topic       Topic              @relation(fields: [topicId], references: [id])
+  teacher     User               @relation(fields: [teacherId], references: [id])
+  completions LessonCompletion[]
+  @@map("lessons")
+}
+
+model LessonCompletion {
+  id          String   @id @default(uuid())
+  studentId   String
+  lessonId    String
+  completedAt DateTime @default(now())
+  lesson      Lesson   @relation(fields: [lessonId], references: [id])
+  @@unique([studentId, lessonId])
+  @@map("lesson_completions")
+}
+
+model Quiz {
+  id        String         @id @default(uuid())
+  title     String
+  topicId   String
+  teacherId String
+  openTime  DateTime?
+  closeTime DateTime?
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  topic     Topic          @relation(fields: [topicId], references: [id])
+  teacher   User           @relation(fields: [teacherId], references: [id])
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id            String   @id @default(uuid())
+  quizId        String
+  question      String
+  options       String[]
+  correctAnswer Int
+  order         Int      @default(0)
+  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  @@map("quiz_questions")
+}
+
+model QuizAttempt {
+  id             String   @id @default(uuid())
+  studentId      String
+  quizId         String
+  score          Int
+  totalQuestions Int
+  answers        Int[]
+  completedAt    DateTime @default(now())
+  student        User     @relation(fields: [studentId], references: [id])
+  quiz           Quiz     @relation(fields: [quizId], references: [id])
+  @@map("quiz_attempts")
+}
+
+model TypingWordList {
+  id        String   @id @default(uuid())
+  topicId   String
+  teacherId String
+  words     String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  topic     Topic    @relation(fields: [topicId], references: [id])
+  teacher   User     @relation(fields: [teacherId], references: [id])
+  @@map("typing_word_lists")
+}
+
+model TypingResult {
+  id        String   @id @default(uuid())
+  studentId String
+  wpm       Int
+  accuracy  Float
+  mode      String
+  duration  Int
+  createdAt DateTime @default(now())
+  student   User     @relation(fields: [studentId], references: [id])
+  @@map("typing_results")
+}
+
+model BugFixExercise {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  buggyCode   String
+  solution    String
+  hint        String?
+  topicId     String
+  teacherId   String
+  xpReward    Int      @default(10)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  topic       Topic    @relation(fields: [topicId], references: [id])
+  teacher     User     @relation(fields: [teacherId], references: [id])
+  @@map("bugfix_exercises")
+}
+
+model CodingChallenge {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  starterCode String?
+  testCases   String?
+  topicId     String
+  teacherId   String
+  xpReward    Int      @default(20)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  topic       Topic    @relation(fields: [topicId], references: [id])
+  teacher     User     @relation(fields: [teacherId], references: [id])
+  @@map("coding_challenges")
+}
+
+model FigmaChallenge {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  designUrl   String?
+  designFile  String?
+  figmaLink   String?
+  score       Int          @default(100)
+  openTime    DateTime
+  deadline    DateTime
+  topicId     String
+  teacherId   String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  topic       Topic        @relation(fields: [topicId], references: [id])
+  teacher     User         @relation(fields: [teacherId], references: [id])
+  submissions Submission[]
+  @@map("figma_challenges")
+}
+
+model Submission {
+  id             String          @id @default(uuid())
+  studentId      String
+  challengeId    String?
+  type           SubmissionType
+  fileUrl        String?
+  githubUrl      String?
+  demoUrl        String?
+  score          Int?
+  feedback       String?
+  reviewed       Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  student        User            @relation(fields: [studentId], references: [id])
+  figmaChallenge FigmaChallenge? @relation(fields: [challengeId], references: [id])
+  @@map("submissions")
+}
+
+model XP {
+  id        String   @id @default(uuid())
+  studentId String
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+  student   User     @relation(fields: [studentId], references: [id])
+  @@map("xp_records")
+}
+
+model XPRequest {
+  id        String          @id @default(uuid())
+  teacherId String
+  studentId String
+  amount    Int
+  reason    String
+  status    XPRequestStatus @default(PENDING)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  teacher   User            @relation("TeacherXPRequests", fields: [teacherId], references: [id])
+  student   User            @relation("StudentXPRequests", fields: [studentId], references: [id])
+  @@map("xp_requests")
+}
+
+model Achievement {
+  id          String            @id @default(uuid())
+  name        String            @unique
+  description String
+  icon        String?
+  criteria    String
+  xpThreshold Int?
+  users       UserAchievement[]
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  userId        String
+  achievementId String
+  earnedAt      DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id])
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model Streak {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  currentDays Int      @default(0)
+  longestDays Int      @default(0)
+  lastActive  DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  @@map("streaks")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  type      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  @@map("notifications")
+}
+
+model ChatMessage {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String
+  content    String
+  createdAt  DateTime @default(now())
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  @@map("chat_messages")
+}
+
+model SystemLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+  @@map("system_logs")
+}
+
+model LibraryItem {
+  id        String   @id @default(uuid())
+  type      String
+  title     String
+  content   String
+  authorId  String
+  createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id])
+  @@map("library_items")
+}
