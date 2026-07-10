@@ -13,11 +13,7 @@ export default function TeacherQuizzes() {
   const qc = useQueryClient();
 
   const { data: quizzes = [] } = useQuery({ queryKey: ['quizzes'], queryFn: () => api.get('/quizzes').then(r => r.data) });
-  const { data: topics = [] } = useQuery({ queryKey: ['topics-list'], queryFn: () => api.get('/lessons').then(r => {
-    const seen = new Map();
-    r.data.forEach((l: any) => { if (l.topic && !seen.has(l.topic.id)) seen.set(l.topic.id, l.topic); });
-    return Array.from(seen.values());
-  })});
+  const { data: topics = [] } = useQuery({ queryKey: ['topics-list'], queryFn: () => api.get('/topics').then(r => r.data) });
 
   const add = useMutation({
     mutationFn: (d: any) => api.post('/quizzes', d),
