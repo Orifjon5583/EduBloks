@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../index';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth';
+import { updateStreak } from './streak';
 
 const r = Router();
 r.use(authenticate);
@@ -25,7 +26,7 @@ r.post('/:id/submit', authorize('STUDENT'), async (req: AuthRequest, res) => {
   const ex = await prisma.bugFixExercise.findUnique({ where: { id: req.params.id } });
   if (!ex) { res.status(404).json({ message: 'Topilmadi' }); return; }
   const correct = req.body.code.trim() === ex.solution.trim();
-  if (correct) await prisma.xP.create({ data: { studentId: req.user!.id, amount: ex.xpReward, reason: `BugFix: ${ex.title}` } });
+  if (correct) { await prisma.xP.create({ data: { studentId: req.user!.id, amount: ex.xpReward, reason: `BugFix: ${ex.title}` } }); await updateStreak(req.user!.id); }
   res.json({ correct, xp: correct ? ex.xpReward : 0 });
 });
 

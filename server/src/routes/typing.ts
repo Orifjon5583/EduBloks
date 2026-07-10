@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../index';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth';
+import { updateStreak } from './streak';
 
 const r = Router();
 r.use(authenticate);
@@ -19,6 +20,7 @@ r.post('/result', authorize('STUDENT'), async (req: AuthRequest, res) => {
   const result = await prisma.typingResult.create({ data: { studentId: req.user!.id, wpm: req.body.wpm, accuracy: req.body.accuracy, mode: req.body.mode, duration: req.body.duration } });
   const xp = Math.min(Math.round(req.body.wpm / 5), 15);
   if (xp > 0) await prisma.xP.create({ data: { studentId: req.user!.id, amount: xp, reason: `Typing: ${req.body.wpm} WPM` } });
+  await updateStreak(req.user!.id);
   res.json(result);
 });
 r.get('/results', authorize('STUDENT'), async (req: AuthRequest, res) => {

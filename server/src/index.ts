@@ -22,6 +22,7 @@ import notificationRoutes from './routes/notifications';
 import logRoutes from './routes/logs';
 import chatRoutes from './routes/chat';
 import dashboardRoutes from './routes/dashboard';
+import achievementRoutes from './routes/achievements';
 import { setupSocket } from './socket';
 
 dotenv.config();
@@ -54,6 +55,7 @@ app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/logs', logRoutes);
 app.use('/api/v1/chat', chatRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/achievements', achievementRoutes);
 
 app.use((err: any, req: any, res: any, next: any) => {
   console.error(err);

@@ -1,18 +1,21 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import { useThemeStore } from '../store/theme';
+import { LayoutDashboard, BookOpen, HelpCircle, Keyboard, Bug, Code, Figma, Library, ClipboardCheck, Bell, MessageCircle, LogOut, Sun, Moon } from 'lucide-react';
+import NotificationBell from '../components/NotificationBell';
 
 const links = [
-  { to: '/teacher', label: '📊 Dashboard', end: true },
-  { to: '/teacher/lessons', label: '📖 Darslar' },
-  { to: '/teacher/quizzes', label: '❓ Quizlar' },
-  { to: '/teacher/typing', label: '⌨️ Typing' },
-  { to: '/teacher/bugfix', label: '🐛 Bug Fix' },
-  { to: '/teacher/coding', label: '💻 Coding' },
-  { to: '/teacher/figma', label: '🎨 Figma' },
-  { to: '/teacher/library', label: '📚 Kutubxona' },
-  { to: '/teacher/reviews', label: '✅ Tekshirish' },
-  { to: '/teacher/chat', label: '💬 Chat' },
+  { to: '/teacher', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/teacher/lessons', label: 'Darslar', icon: BookOpen },
+  { to: '/teacher/quizzes', label: 'Quizlar', icon: HelpCircle },
+  { to: '/teacher/typing', label: 'Typing', icon: Keyboard },
+  { to: '/teacher/bugfix', label: 'Bug Fix', icon: Bug },
+  { to: '/teacher/coding', label: 'Coding', icon: Code },
+  { to: '/teacher/figma', label: 'Figma', icon: Figma },
+  { to: '/teacher/library', label: 'Kutubxona', icon: Library },
+  { to: '/teacher/reviews', label: 'Tekshirish', icon: ClipboardCheck },
+  { to: '/teacher/notifications', label: 'Bildirishnomalar', icon: Bell },
+  { to: '/teacher/chat', label: 'Chat', icon: MessageCircle },
 ];
 
 export default function TeacherLayout() {
@@ -30,16 +33,24 @@ export default function TeacherLayout() {
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {links.map(l => (
             <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => `sidebar-link ${isActive ? 'sidebar-link-active' : ''}`}>
-              {l.label}
+              <l.icon className="w-5 h-5" />
+              <span>{l.label}</span>
             </NavLink>
           ))}
         </nav>
         <div className="p-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
           <div className="flex justify-between items-center px-3">
             <span className="text-sm text-gray-600 dark:text-gray-400">{user?.firstName}</span>
-            <button onClick={toggle}>{isDark ? '☀️' : '🌙'}</button>
+            <div className="flex items-center gap-2">
+              <NavLink to="/teacher/notifications"><NotificationBell /></NavLink>
+              <button onClick={toggle} className="p-1">
+                {isDark ? <Sun className="w-4 h-4 text-yellow-500" /> : <Moon className="w-4 h-4 text-gray-600" />}
+              </button>
+            </div>
           </div>
-          <button onClick={() => { logout(); nav('/login'); }} className="sidebar-link text-red-600 w-full">🚪 Chiqish</button>
+          <button onClick={() => { logout(); nav('/login'); }} className="sidebar-link text-red-600 w-full">
+            <LogOut className="w-5 h-5" /> <span>Chiqish</span>
+          </button>
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto p-6"><Outlet /></main>

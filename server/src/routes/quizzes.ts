@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../index';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth';
+import { updateStreak } from './streak';
 
 const r = Router();
 r.use(authenticate);
@@ -28,6 +29,7 @@ r.post('/:id/attempt', authorize('STUDENT'), async (req: AuthRequest, res) => {
   const attempt = await prisma.quizAttempt.create({ data: { studentId: req.user!.id, quizId: quiz.id, score, totalQuestions: quiz.questions.length, answers: req.body.answers } });
   const xp = Math.round((score / quiz.questions.length) * 20);
   if (xp > 0) await prisma.xP.create({ data: { studentId: req.user!.id, amount: xp, reason: `Quiz: ${quiz.title}` } });
+  await updateStreak(req.user!.id);
   res.json({ attempt, score, total: quiz.questions.length, xp });
 });
 

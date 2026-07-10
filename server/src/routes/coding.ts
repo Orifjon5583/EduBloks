@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../index';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth';
+import { updateStreak } from './streak';
 
 const r = Router();
 r.use(authenticate);
@@ -23,6 +24,7 @@ r.post('/:id/submit', authorize('STUDENT'), async (req: AuthRequest, res) => {
   if (!ch) { res.status(404).json({ message: 'Topilmadi' }); return; }
   await prisma.submission.create({ data: { studentId: req.user!.id, type: 'CODING', fileUrl: req.body.code } });
   await prisma.xP.create({ data: { studentId: req.user!.id, amount: ch.xpReward, reason: `Coding: ${ch.title}` } });
+  await updateStreak(req.user!.id);
   res.json({ message: 'Topshirildi', xp: ch.xpReward });
 });
 

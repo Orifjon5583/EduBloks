@@ -13,8 +13,17 @@ r.get('/:id', async (req, res) => {
   res.json(await prisma.figmaChallenge.findUnique({ where: { id: req.params.id }, include: { submissions: { include: { student: { select: { id: true, firstName: true, lastName: true } } } } } }));
 });
 r.post('/', authorize('TEACHER'), async (req: AuthRequest, res) => {
-  const { title, description, figmaLink, score, openTime, deadline, topicId } = req.body;
-  res.status(201).json(await prisma.figmaChallenge.create({ data: { title, description, figmaLink, score: score || 100, openTime: new Date(openTime), deadline: new Date(deadline), topicId, teacherId: req.user!.id } }));
+  try {
+    const { title, description, figmaLink, score, openTime, deadline, topicId } = req.body;
+    // Figma schedule: only Mon/Wed/Fri
+    const open = new Date(openTime);
+    const day = open.getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+    if (![1, 3, 5].includes(day)) {
+      res.status(400).json({ message: 'Figma topshiriqlar faqat Dushanba, Chorshanba, Juma kunlari ochiladi' });
+      return;
+    }
+    res.status(201).json(await prisma.figmaChallenge.create({ data: { title, description, figmaLink, score: score || 100, openTime: open, deadline: new Date(deadline), topicId, teacherId: req.user!.id } }));
+  } catch (e: any) { res.status(500).json({ message: e.message }); }
 });
 r.delete('/:id', authorize('TEACHER'), async (req, res) => {
   await prisma.figmaChallenge.delete({ where: { id: req.params.id } }); res.json({ message: 'O\'chirildi' });

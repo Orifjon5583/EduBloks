@@ -29,8 +29,10 @@ import SBugFix from './pages/student/BugFix';
 import SCoding from './pages/student/Coding';
 import SFigma from './pages/student/Figma';
 import SProgress from './pages/student/Progress';
+import SAchievements from './pages/student/Achievements';
 import SRankings from './pages/student/Rankings';
 import Chat from './pages/Chat';
+import Notifications from './pages/Notifications';
 
 function Guard({children,roles}:{children:any,roles:string[]}) {
   const {user}=useAuthStore();
@@ -56,6 +58,7 @@ export default function App() {
       <Route path="xp-approval" element={<XPApproval/>}/>
       <Route path="logs" element={<Logs/>}/>
       <Route path="rankings" element={<Rankings/>}/>
+      <Route path="notifications" element={<Notifications/>}/>
       <Route path="chat" element={<Chat/>}/>
     </Route>
 
@@ -69,6 +72,7 @@ export default function App() {
       <Route path="figma" element={<TFigma/>}/>
       <Route path="library" element={<TLibrary/>}/>
       <Route path="reviews" element={<TReviews/>}/>
+      <Route path="notifications" element={<Notifications/>}/>
       <Route path="chat" element={<Chat/>}/>
     </Route>
 
@@ -81,7 +85,9 @@ export default function App() {
       <Route path="coding" element={<SCoding/>}/>
       <Route path="figma" element={<SFigma/>}/>
       <Route path="progress" element={<SProgress/>}/>
+      <Route path="achievements" element={<SAchievements/>}/>
       <Route path="rankings" element={<SRankings/>}/>
+      <Route path="notifications" element={<Notifications/>}/>
       <Route path="chat" element={<Chat/>}/>
     </Route>
 
