@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/auth';
 import { useThemeStore } from '../store/theme';
 import { LayoutDashboard, Building2, Users, UsersRound, GraduationCap, Trophy, ShieldCheck, FileText, Bell, MessageCircle, LogOut, Sun, Moon } from 'lucide-react';
 import NotificationBell from '../components/NotificationBell';
+import MobileMenu from '../components/MobileMenu';
 
 const links = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -24,7 +25,8 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+      <MobileMenu links={links} />
+      <aside className="hidden md:flex w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-col">
         <div className="p-5 border-b border-gray-200 dark:border-gray-700">
           <h2 className="font-bold text-lg text-gray-900 dark:text-white">EduBlocks</h2>
           <p className="text-xs text-gray-500">Super Admin</p>
@@ -52,7 +54,7 @@ export default function AdminLayout() {
           </button>
         </div>
       </aside>
-      <main className="flex-1 overflow-y-auto p-6"><Outlet /></main>
+      <main className="flex-1 overflow-y-auto p-4 md:p-6"><Outlet /></main>
     </div>
   );
 }
